@@ -57,6 +57,9 @@ msgstr "Déconnecté"
 msgid "Fan: %1%"
 msgstr "Ventilateur : %1 %"
 
+msgid "Files"
+msgstr "Fichiers"
+
 msgid "Flow: %1%"
 msgstr "Débit : %1 %"
 
@@ -96,6 +99,12 @@ msgstr "Hôte Moonraker :"
 msgid "Motion"
 msgstr "Mouvement"
 
+msgid "No filename provided"
+msgstr "Aucun nom de fichier fourni"
+
+msgid "No files found on virtual SD card."
+msgstr "Aucun fichier trouvé sur la carte SD virtuelle."
+
 msgid "No response from server. Check host/port, reverse proxy, or auth token."
 msgstr "Aucune réponse du serveur. Vérifiez l’hôte/le port, le proxy inverse ou le jeton d’authentification."
 
@@ -122,6 +131,9 @@ msgstr "Position : absolue"
 
 msgid "Reconnect"
 msgstr "Reconnecter"
+
+msgid "Refresh files"
+msgstr "Rafraîchir les fichiers"
 
 msgid "Resume"
 msgstr "Reprendre"

@@ -35,6 +35,8 @@ PlasmoidItem {
     property real speedFactor: 0
     property real flowFactor: 0
     property real fanSpeed: 0
+    property var gcodeFiles: []
+    property string selectedFile: ""
     property int chartX: 0
     property int maxPoints: 120
     property var nozzleSeriesRef: null
@@ -281,6 +283,49 @@ PlasmoidItem {
         })
     }
 
+    function normalizeFileList(response) {
+        if (!response || !response.result || !response.result.files) {
+            return []
+        }
+        var files = []
+        for (var i = 0; i < response.result.files.length; i += 1) {
+            var entry = response.result.files[i]
+            var path = entry.path || entry.filename || entry.name
+            if (path) {
+                files.push(path)
+            }
+        }
+        files.sort()
+        return files
+    }
+
+    function applyFileList(files) {
+        gcodeFiles = files
+        if (gcodeFiles.length === 0) {
+            selectedFile = ""
+            return
+        }
+        if (startFile && gcodeFiles.indexOf(startFile) >= 0) {
+            selectedFile = startFile
+        } else if (!selectedFile || gcodeFiles.indexOf(selectedFile) < 0) {
+            selectedFile = gcodeFiles[0]
+        }
+    }
+
+    function refreshFiles() {
+        sendRequest("server.files.list", { root: "gcodes" }, function(response) {
+            var files = normalizeFileList(response)
+            if (files.length > 0) {
+                applyFileList(files)
+                return
+            }
+            sendRequest("server.files.list", null, function(fallback) {
+                files = normalizeFileList(fallback)
+                applyFileList(files)
+            })
+        })
+    }
+
     function requestMotionSnapshot() {
         sendRequest("printer.objects.query", {
             objects: {
@@ -336,11 +381,12 @@ PlasmoidItem {
     }
 
     function startPrint() {
-        if (!startFile) {
-            errorText = "No filename provided"
+        var file = selectedFile || startFile
+        if (!file) {
+            errorText = i18nd("plasma_applet_org.kde.plasma.klippermonitor", "No filename provided")
             return
         }
-        sendRequest("printer.print.start", { filename: startFile })
+        sendRequest("printer.print.start", { filename: file })
     }
 
     function pausePrint() {
@@ -369,6 +415,7 @@ PlasmoidItem {
                 errorText = ""
                 responseTimer.restart()
                 sendRequest("server.info")
+                refreshFiles()
                 requestStatus()
             } else if (status === WebSocket.Closed) {
                 connectionState = "disconnected"
@@ -460,14 +507,14 @@ PlasmoidItem {
 
     Connections {
         target: plasmoid.configuration
-        function onHostChanged() { reconnect() }
-        function onPortChanged() { reconnect() }
         function onUseTlsChanged() { reconnect() }
         function onApiKeyChanged() { reconnect() }
         function onWsPathChanged() { reconnect() }
         function onDefaultFileChanged() {
             startFile = plasmoid.configuration.defaultFile
         }
+        function onHostChanged() { reconnect() }
+        function onPortChanged() { reconnect() }
     }
 
     Component.onCompleted: reconnect()
@@ -697,75 +744,202 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         spacing: Kirigami.Units.mediumSpacing
 
-                        GridLayout {
-                            Layout.alignment: Qt.AlignTop
-                            columns: 3
-                            rowSpacing: Kirigami.Units.smallSpacing
-                            columnSpacing: Kirigami.Units.smallSpacing
+                        Item {
+                            id: jogPad
+                            Layout.preferredWidth: Kirigami.Units.gridUnit * 9
+                            Layout.preferredHeight: Kirigami.Units.gridUnit * 9
 
-                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y+")
-                                onClicked: jog("Y", plasmoid.configuration.jogStep)
-                            }
-                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
-
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X-")
-                                onClicked: jog("X", -plasmoid.configuration.jogStep)
-                            }
-                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X+")
-                                onClicked: jog("X", plasmoid.configuration.jogStep)
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: Math.min(parent.width, parent.height)
+                                height: width
+                                radius: width / 2
+                                color: root.colorWithAlpha(root.accentColor, 0.08)
+                                border.color: root.colorWithAlpha(PlasmaCore.Theme.textColor, 0.2)
+                                border.width: 1
                             }
 
-                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y-")
-                                onClicked: jog("Y", -plasmoid.configuration.jogStep)
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width * 0.56
+                                height: width
+                                radius: width / 2
+                                color: root.colorWithAlpha(PlasmaCore.Theme.backgroundColor, 0.9)
+                                border.color: root.cardBorderColor
+                                border.width: 1
                             }
-                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
+
+                            Rectangle {
+                                id: jogUp
+                                width: Kirigami.Units.gridUnit * 2.3
+                                height: width
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.top: parent.top
+                                anchors.topMargin: Kirigami.Units.smallSpacing
+                                radius: 6
+                                color: root.cardColor
+                                border.color: root.cardBorderColor
+                                PlasmaComponents3.Label {
+                                    anchors.centerIn: parent
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y+")
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: jog("Y", plasmoid.configuration.jogStep)
+                                }
+                            }
+
+                            Rectangle {
+                                id: jogDown
+                                width: Kirigami.Units.gridUnit * 2.3
+                                height: width
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: Kirigami.Units.smallSpacing
+                                radius: 6
+                                color: root.cardColor
+                                border.color: root.cardBorderColor
+                                PlasmaComponents3.Label {
+                                    anchors.centerIn: parent
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y-")
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: jog("Y", -plasmoid.configuration.jogStep)
+                                }
+                            }
+
+                            Rectangle {
+                                id: jogLeft
+                                width: Kirigami.Units.gridUnit * 2.3
+                                height: width
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                anchors.leftMargin: Kirigami.Units.smallSpacing
+                                radius: 6
+                                color: root.cardColor
+                                border.color: root.cardBorderColor
+                                PlasmaComponents3.Label {
+                                    anchors.centerIn: parent
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X-")
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: jog("X", -plasmoid.configuration.jogStep)
+                                }
+                            }
+
+                            Rectangle {
+                                id: jogRight
+                                width: Kirigami.Units.gridUnit * 2.3
+                                height: width
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: Kirigami.Units.smallSpacing
+                                radius: 6
+                                color: root.cardColor
+                                border.color: root.cardBorderColor
+                                PlasmaComponents3.Label {
+                                    anchors.centerIn: parent
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X+")
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: jog("X", plasmoid.configuration.jogStep)
+                                }
+                            }
                         }
 
-                        ColumnLayout {
-                            Layout.alignment: Qt.AlignTop
-                            spacing: Kirigami.Units.smallSpacing
+                        Rectangle {
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.preferredWidth: Kirigami.Units.gridUnit * 2.6
+                            Layout.preferredHeight: Kirigami.Units.gridUnit * 6
+                            radius: 8
+                            color: root.cardColor
+                            border.color: root.cardBorderColor
 
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z+")
-                                onClicked: jog("Z", plasmoid.configuration.jogStep)
-                            }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z-")
-                                onClicked: jog("Z", -plasmoid.configuration.jogStep)
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: Kirigami.Units.smallSpacing
+                                PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z") }
+                                Rectangle {
+                                    width: Kirigami.Units.gridUnit * 2.0
+                                    height: Kirigami.Units.gridUnit * 2.0
+                                    radius: 6
+                                    color: root.colorWithAlpha(root.accentColor, 0.10)
+                                    border.color: root.cardBorderColor
+                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z+") }
+                                    MouseArea { anchors.fill: parent; onClicked: jog("Z", plasmoid.configuration.jogStep) }
+                                }
+                                Rectangle {
+                                    width: Kirigami.Units.gridUnit * 2.0
+                                    height: Kirigami.Units.gridUnit * 2.0
+                                    radius: 6
+                                    color: root.cardColor
+                                    border.color: root.cardBorderColor
+                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z-") }
+                                    MouseArea { anchors.fill: parent; onClicked: jog("Z", -plasmoid.configuration.jogStep) }
+                                }
                             }
                         }
 
                         Item { Layout.fillWidth: true }
 
-                        GridLayout {
+                        ColumnLayout {
                             Layout.alignment: Qt.AlignTop
-                            columns: 3
-                            rowSpacing: Kirigami.Units.smallSpacing
-                            columnSpacing: Kirigami.Units.smallSpacing
+                            spacing: Kirigami.Units.smallSpacing
 
-                            PlasmaComponents3.Button {
-                                Layout.columnSpan: 3
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home All")
-                                onClicked: homeAll()
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Kirigami.Units.gridUnit * 2.2
+                                radius: 8
+                                color: root.colorWithAlpha(root.accentColor, 0.15)
+                                border.color: root.cardBorderColor
+
+                                PlasmaComponents3.Label {
+                                    anchors.centerIn: parent
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home All")
+                                    font.weight: Font.Medium
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: homeAll()
+                                }
                             }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home X")
-                                onClicked: homeAxis("X")
-                            }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home Y")
-                                onClicked: homeAxis("Y")
-                            }
-                            PlasmaComponents3.Button {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home Z")
-                                onClicked: homeAxis("Z")
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Kirigami.Units.smallSpacing
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.0
+                                    radius: 8
+                                    color: root.cardColor
+                                    border.color: root.cardBorderColor
+                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home X") }
+                                    MouseArea { anchors.fill: parent; onClicked: homeAxis("X") }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.0
+                                    radius: 8
+                                    color: root.cardColor
+                                    border.color: root.cardBorderColor
+                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home Y") }
+                                    MouseArea { anchors.fill: parent; onClicked: homeAxis("Y") }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.0
+                                    radius: 8
+                                    color: root.cardColor
+                                    border.color: root.cardBorderColor
+                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home Z") }
+                                    MouseArea { anchors.fill: parent; onClicked: homeAxis("Z") }
+                                }
                             }
                         }
                     }
@@ -909,40 +1083,69 @@ PlasmoidItem {
                 }
 
 
-                RowLayout {
+                ColumnLayout {
                     Layout.fillWidth: true
                     spacing: Kirigami.Units.smallSpacing
 
-                    PlasmaComponents3.TextField {
-                        id: startFileField
+                    RowLayout {
                         Layout.fillWidth: true
-                        placeholderText: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "filename.gcode")
-                        text: startFile
-                        onEditingFinished: startFile = text
+                        spacing: Kirigami.Units.smallSpacing
+
+                        PlasmaComponents3.Label {
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Files")
+                            opacity: 0.7
+                        }
+                        Item { Layout.fillWidth: true }
+                        PlasmaComponents3.Button {
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Refresh files")
+                            icon.name: "view-refresh"
+                            onClicked: refreshFiles()
+                        }
                     }
 
-                    PlasmaComponents3.Button {
-                        text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Start")
-                        icon.name: "media-playback-start"
-                        onClicked: startPrint()
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+
+                        PlasmaComponents3.ComboBox {
+                            id: fileCombo
+                            Layout.fillWidth: true
+                            model: gcodeFiles
+                            currentIndex: gcodeFiles.indexOf(selectedFile)
+                            onActivated: selectedFile = gcodeFiles[currentIndex]
+                            enabled: gcodeFiles.length > 0
+                        }
+
+                        PlasmaComponents3.Button {
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Start")
+                            icon.name: "media-playback-start"
+                            enabled: gcodeFiles.length > 0
+                            onClicked: startPrint()
+                        }
+
+                        PlasmaComponents3.Button {
+                            text: printerState === "paused" ? i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Resume") : i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Pause")
+                            icon.name: printerState === "paused" ? "media-playback-start" : "media-playback-pause"
+                            onClicked: printerState === "paused" ? resumePrint() : pausePrint()
+                        }
+
+                        PlasmaComponents3.Button {
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Cancel")
+                            icon.name: "process-stop"
+                            onClicked: cancelPrint()
+                        }
+
+                        PlasmaComponents3.Button {
+                            icon.name: "view-refresh"
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Reconnect")
+                            onClicked: reconnect()
+                        }
                     }
 
-                    PlasmaComponents3.Button {
-                        text: printerState === "paused" ? i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Resume") : i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Pause")
-                        icon.name: printerState === "paused" ? "media-playback-start" : "media-playback-pause"
-                        onClicked: printerState === "paused" ? resumePrint() : pausePrint()
-                    }
-
-                    PlasmaComponents3.Button {
-                        text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Cancel")
-                        icon.name: "process-stop"
-                        onClicked: cancelPrint()
-                    }
-
-                    PlasmaComponents3.Button {
-                        icon.name: "view-refresh"
-                        text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Reconnect")
-                        onClicked: reconnect()
+                    PlasmaComponents3.Label {
+                        visible: gcodeFiles.length === 0
+                        text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "No files found on virtual SD card.")
+                        opacity: 0.7
                     }
                 }
 

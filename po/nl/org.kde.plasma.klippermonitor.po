@@ -57,6 +57,9 @@ msgstr "Verbinding verbroken"
 msgid "Fan: %1%"
 msgstr "Ventilator: %1%"
 
+msgid "Files"
+msgstr "Bestanden"
+
 msgid "Flow: %1%"
 msgstr "Flow: %1%"
 
@@ -96,6 +99,12 @@ msgstr "Moonraker-host:"
 msgid "Motion"
 msgstr "Beweging"
 
+msgid "No filename provided"
+msgstr "Geen bestandsnaam opgegeven"
+
+msgid "No files found on virtual SD card."
+msgstr "Geen bestanden gevonden op de virtuele SD-kaart."
+
 msgid "No response from server. Check host/port, reverse proxy, or auth token."
 msgstr "Geen antwoord van de server. Controleer host/poort, reverse proxy of auth-token."
 
@@ -122,6 +131,9 @@ msgstr "Positie: absoluut"
 
 msgid "Reconnect"
 msgstr "Opnieuw verbinden"
+
+msgid "Refresh files"
+msgstr "Bestanden vernieuwen"
 
 msgid "Resume"
 msgstr "Hervatten"
