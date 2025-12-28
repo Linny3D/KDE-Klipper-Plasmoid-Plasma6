@@ -51,8 +51,14 @@ msgstr "Verbinden…"
 msgid "Default file to start:"
 msgstr "Standaardbestand om te starten:"
 
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
 msgid "Disconnected"
 msgstr "Verbinding verbroken"
+
+msgid "Enabled"
+msgstr "Ingeschakeld"
 
 msgid "Fan: %1%"
 msgstr "Ventilator: %1%"

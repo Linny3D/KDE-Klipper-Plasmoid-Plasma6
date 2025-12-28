@@ -60,12 +60,14 @@ Open the plasmoid configuration and set:
 - Toolhead panel with live position (X/Y/Z), speed, flow, and fan.
 - Themed jog pad (absolute moves) and homing controls (All/X/Y/Z).
 - Virtual SD card file picker with refresh.
+- UI enable/disable toggle with visual dimming when paused.
 
 ## Usage
 
 - Pick a file from the virtual SD list and press Start.
 - Use the jog pad for XY moves and Z buttons for Z moves.
 - Set jog step and (optional) feedrates in Settings.
+- Use the Enabled switch to pause connections when the printer is offline.
 
 ## Localization
 
@@ -79,3 +81,17 @@ and Brazilian Portuguese. The translation domain is
 - No files listed: ensure Moonraker’s `server.files.list` is available and your
   client is authorized.
 - No data: verify host/port, TLS, and token. Use a direct LAN address if possible.
+
+## Changelog
+
+See `CHANGELOG.md`.
+
+## Release Labels
+
+GitHub Release Notes are generated from labels. Recommended labels:
+
+- `feature`, `enhancement`
+- `bug`, `fix`
+- `docs`
+- `chore`, `refactor`, `build`, `ci`
+- `skip-changelog` (excluded from notes)

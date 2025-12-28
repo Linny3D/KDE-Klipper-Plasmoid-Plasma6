@@ -68,6 +68,10 @@ PlasmoidItem {
         return plasmoid.configuration.host && plasmoid.configuration.port > 0
     }
 
+    function isEnabled() {
+        return plasmoid.configuration.enableConnections
+    }
+
     function connectionStateText() {
         if (connectionState === "connecting") {
             return i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Connecting")
@@ -77,6 +81,9 @@ PlasmoidItem {
         }
         if (connectionState === "not_configured") {
             return i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Not configured")
+        }
+        if (connectionState === "disabled") {
+            return i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Disabled")
         }
         return i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Disconnected")
     }
@@ -103,6 +110,10 @@ PlasmoidItem {
         errorText = ""
         connectionState = "connecting"
         socket.active = false
+        if (!isEnabled()) {
+            connectionState = "disabled"
+            return
+        }
         if (!isConfigured()) {
             connectionState = "not_configured"
             return
@@ -493,7 +504,7 @@ PlasmoidItem {
         id: chartTimer
         interval: Math.max(250, plasmoid.configuration.chartIntervalMs)
         repeat: true
-        running: isConfigured() && connectionState === "connected"
+        running: isConfigured() && isEnabled() && connectionState === "connected"
         onTriggered: sampleCharts()
     }
 
@@ -501,7 +512,7 @@ PlasmoidItem {
         id: motionTimer
         interval: 200
         repeat: true
-        running: isConfigured() && connectionState === "connected"
+        running: isConfigured() && isEnabled() && connectionState === "connected"
         onTriggered: requestMotionSnapshot()
     }
 
@@ -515,6 +526,15 @@ PlasmoidItem {
         }
         function onHostChanged() { reconnect() }
         function onPortChanged() { reconnect() }
+        function onEnableConnectionsChanged() {
+            if (plasmoid.configuration.enableConnections) {
+                reconnect()
+            } else {
+                errorText = ""
+                socket.active = false
+                connectionState = "disabled"
+            }
+        }
     }
 
     Component.onCompleted: reconnect()
@@ -593,12 +613,20 @@ PlasmoidItem {
                         font.weight: Font.Medium
                     }
                 }
+
+                PlasmaComponents3.Switch {
+                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Enabled")
+                    checked: plasmoid.configuration.enableConnections
+                    onToggled: plasmoid.configuration.enableConnections = checked
+                }
             }
 
             ColumnLayout {
                 Layout.fillWidth: true
                 visible: isConfigured()
                 spacing: Kirigami.Units.mediumSpacing
+                enabled: isEnabled()
+                opacity: isEnabled() ? 1.0 : 0.35
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -1163,6 +1191,8 @@ PlasmoidItem {
                 visible: !isConfigured()
                 text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Not configured. Open the settings to add your Moonraker host.")
                 wrapMode: Text.Wrap
+                enabled: isEnabled()
+                opacity: isEnabled() ? 1.0 : 0.35
             }
 
             Item {

@@ -51,8 +51,14 @@ msgstr "Connessione…"
 msgid "Default file to start:"
 msgstr "File predefinito da avviare:"
 
+msgid "Disabled"
+msgstr "Disattivato"
+
 msgid "Disconnected"
 msgstr "Disconnesso"
+
+msgid "Enabled"
+msgstr "Attivo"
 
 msgid "Fan: %1%"
 msgstr "Ventola: %1%"

@@ -26,6 +26,10 @@
       <label>Chart update interval (ms)</label>
       <default>1000</default>
     </entry>
+    <entry name="enableConnections" type="Bool">
+      <label>Enable connections</label>
+      <default>true</default>
+    </entry>
     <entry name="jogStep" type="Double">
       <label>Jog step (mm)</label>
       <default>10</default>
