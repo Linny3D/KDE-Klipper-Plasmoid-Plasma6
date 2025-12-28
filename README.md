@@ -1,3 +1,5 @@
+<!-- SPDX-FileCopyrightText: 2025 Marco Gaib - mgdev72@gmail.com -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 # Klipper Monitor Plasmoid
 
 Plasma 6 plasmoid to monitor and control a Klipper printer via the Moonraker WebSocket API.

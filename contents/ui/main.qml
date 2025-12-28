@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Marco Gaib - mgdev72@gmail.com
+// SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtWebSockets
