@@ -9,71 +9,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "General"
-msgstr "Geral"
-
-msgid "Moonraker host:"
-msgstr "Host do Moonraker:"
-
-msgid "192.168.0.42"
-msgstr "192.168.0.42"
-
-msgid "Port:"
-msgstr "Porta:"
-
-msgid "TLS:"
-msgstr "TLS:"
-
-msgid "Use TLS (wss)"
-msgstr "Usar TLS (wss)"
-
-msgid "API key or token:"
-msgstr "Chave de API ou token:"
-
-msgid "Optional"
-msgstr "Opcional"
-
-msgid "WebSocket path:"
-msgstr "Caminho do WebSocket:"
-
-msgid "/websocket"
-msgstr "/websocket"
-
-msgid "Chart interval (ms):"
-msgstr "Intervalo do gráfico (ms):"
-
-msgid "Default file to start:"
-msgstr "Arquivo padrão para iniciar:"
-
-msgid "filename.gcode"
-msgstr "filename.gcode"
-
-msgid "Clear settings"
-msgstr "Limpar configurações"
-
-msgid "Connecting"
-msgstr "Conectando…"
-
-msgid "Connected"
-msgstr "Conectado"
-
-msgid "Not configured"
-msgstr "Não configurado"
-
-msgid "Disconnected"
-msgstr "Desconectado"
-
-msgid "Invalid JSON from server: %1"
-msgstr "JSON inválido do servidor: %1"
-
-msgid "Server error: %1"
-msgstr "Erro do servidor: %1"
-
-msgid "No response from server. Check host/port, reverse proxy, or auth token."
-msgstr "Sem resposta do servidor. Verifique host/porta, proxy reverso ou token de autenticação."
-
-msgid "Klipper Monitor"
-msgstr "Monitor Klipper"
+msgid "%1 / %2"
+msgstr "%1 / %2"
 
 msgid "%1 • %2"
 msgstr "%1 • %2"
@@ -84,32 +21,170 @@ msgstr "%1 • Sem arquivo"
 msgid "%1%"
 msgstr "%1%"
 
-msgid "Nozzle"
-msgstr "Bico"
+msgid "/websocket"
+msgstr "/websocket"
 
-msgid "%1 / %2"
-msgstr "%1 / %2"
+msgid "192.168.0.42"
+msgstr "192.168.0.42"
+
+msgid "API key or token:"
+msgstr "Chave de API ou token:"
 
 msgid "Bed"
 msgstr "Mesa"
 
-msgid "Thermals"
-msgstr "Temperaturas"
+msgid "Cancel"
+msgstr "Cancelar"
 
-msgid "Start"
-msgstr "Iniciar"
+msgid "Chart interval (ms):"
+msgstr "Intervalo do gráfico (ms):"
 
-msgid "Resume"
-msgstr "Retomar"
+msgid "Clear settings"
+msgstr "Limpar configurações"
+
+msgid "Connected"
+msgstr "Conectado"
+
+msgid "Connecting"
+msgstr "Conectando…"
+
+msgid "Default file to start:"
+msgstr "Arquivo padrão para iniciar:"
+
+msgid "Disconnected"
+msgstr "Desconectado"
+
+msgid "Fan: %1%"
+msgstr "Ventoinha: %1%"
+
+msgid "Flow: %1%"
+msgstr "Fluxo: %1%"
+
+msgid "General"
+msgstr "Geral"
+
+msgid "Home All"
+msgstr "Home tudo"
+
+msgid "Home X"
+msgstr "Home X"
+
+msgid "Home Y"
+msgstr "Home Y"
+
+msgid "Home Z"
+msgstr "Home Z"
+
+msgid "Invalid JSON from server: %1"
+msgstr "JSON inválido do servidor: %1"
+
+msgid "Jog feedrate XY (mm/min):"
+msgstr "Velocidade de avanço XY (mm/min):"
+
+msgid "Jog feedrate Z (mm/min):"
+msgstr "Velocidade de avanço Z (mm/min):"
+
+msgid "Jog step (mm):"
+msgstr "Passo de deslocamento (mm):"
+
+msgid "Klipper Monitor"
+msgstr "Monitor Klipper"
+
+msgid "Moonraker host:"
+msgstr "Host do Moonraker:"
+
+msgid "Motion"
+msgstr "Movimento"
+
+msgid "No response from server. Check host/port, reverse proxy, or auth token."
+msgstr "Sem resposta do servidor. Verifique host/porta, proxy reverso ou token de autenticação."
+
+msgid "Not configured"
+msgstr "Não configurado"
+
+msgid "Not configured. Open the settings to add your Moonraker host."
+msgstr "Não configurado. Abra as configurações para adicionar seu host Moonraker."
+
+msgid "Nozzle"
+msgstr "Bico"
+
+msgid "Optional"
+msgstr "Opcional"
 
 msgid "Pause"
 msgstr "Pausar"
 
-msgid "Cancel"
-msgstr "Cancelar"
+msgid "Port:"
+msgstr "Porta:"
+
+msgid "Position: absolute"
+msgstr "Posição: absoluta"
 
 msgid "Reconnect"
 msgstr "Reconectar"
 
-msgid "Not configured. Open the settings to add your Moonraker host."
-msgstr "Não configurado. Abra as configurações para adicionar seu host Moonraker."
+msgid "Resume"
+msgstr "Retomar"
+
+msgid "Server error: %1"
+msgstr "Erro do servidor: %1"
+
+msgid "Speed: %1%"
+msgstr "Velocidade: %1%"
+
+msgid "Start"
+msgstr "Iniciar"
+
+msgid "Step %1 mm"
+msgstr "Passo %1 mm"
+
+msgid "Steps"
+msgstr "Passos"
+
+msgid "TLS:"
+msgstr "TLS:"
+
+msgid "Thermals"
+msgstr "Temperaturas"
+
+msgid "Toolhead"
+msgstr "Cabeçote"
+
+msgid "Use TLS (wss)"
+msgstr "Usar TLS (wss)"
+
+msgid "WebSocket path:"
+msgstr "Caminho do WebSocket:"
+
+msgid "X"
+msgstr "X"
+
+msgid "X+"
+msgstr "X+"
+
+msgid "X-"
+msgstr "X-"
+
+msgid "X: %1  Y: %2  Z: %3"
+msgstr "X: %1  Y: %2  Z: %3"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Y+"
+msgstr "Y+"
+
+msgid "Y-"
+msgstr "Y-"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Z+"
+msgstr "Z+"
+
+msgid "Z-"
+msgstr "Z-"
+
+msgid "filename.gcode"
+msgstr "filename.gcode"

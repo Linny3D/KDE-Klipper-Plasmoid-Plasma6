@@ -12,6 +12,9 @@ KCM.SimpleKCM {
     property alias cfg_apiKey: apiKeyField.text
     property alias cfg_wsPath: wsPathField.text
     property alias cfg_chartIntervalMs: chartIntervalField.value
+    property real cfg_jogStep
+    property alias cfg_jogFeedXY: jogFeedXYField.value
+    property alias cfg_jogFeedZ: jogFeedZField.value
     property alias cfg_defaultFile: defaultFileField.text
     property string cfg_hostDefault
     property int cfg_portDefault
@@ -19,6 +22,9 @@ KCM.SimpleKCM {
     property string cfg_apiKeyDefault
     property string cfg_wsPathDefault
     property int cfg_chartIntervalMsDefault
+    property real cfg_jogStepDefault
+    property int cfg_jogFeedXYDefault
+    property int cfg_jogFeedZDefault
     property string cfg_defaultFileDefault
 
     Kirigami.FormLayout {
@@ -64,6 +70,47 @@ KCM.SimpleKCM {
             editable: true
         }
 
+        QQC2.SpinBox {
+            id: jogStepField
+            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Jog step (mm):")
+            from: 1
+            to: 1000
+            stepSize: 1
+            editable: true
+            value: 100
+            textFromValue: function(value) {
+                return (value / 10).toFixed(1)
+            }
+            valueFromText: function(text) {
+                var parsed = parseFloat(text)
+                if (isNaN(parsed)) {
+                    return value
+                }
+                return Math.round(parsed * 10)
+            }
+            onValueModified: {
+                cfg_jogStep = value / 10.0
+            }
+        }
+
+        QQC2.SpinBox {
+            id: jogFeedXYField
+            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Jog feedrate XY (mm/min):")
+            from: 0
+            to: 30000
+            stepSize: 100
+            editable: true
+        }
+
+        QQC2.SpinBox {
+            id: jogFeedZField
+            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Jog feedrate Z (mm/min):")
+            from: 0
+            to: 6000
+            stepSize: 50
+            editable: true
+        }
+
         QQC2.TextField {
             id: defaultFileField
             Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Default file to start:")
@@ -83,8 +130,26 @@ KCM.SimpleKCM {
                 apiKeyField.text = ""
                 wsPathField.text = "/websocket"
                 chartIntervalField.value = 1000
+                jogStepField.value = 100
+                jogFeedXYField.value = 0
+                jogFeedZField.value = 0
                 defaultFileField.text = ""
             }
         }
+    }
+
+    onCfg_jogStepChanged: {
+        if (isNaN(cfg_jogStep)) {
+            return
+        }
+        jogStepField.value = Math.round(cfg_jogStep * 10)
+    }
+
+    onCfg_jogFeedXYChanged: {
+        jogFeedXYField.value = cfg_jogFeedXY
+    }
+
+    onCfg_jogFeedZChanged: {
+        jogFeedZField.value = cfg_jogFeedZ
     }
 }

@@ -9,71 +9,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "General"
-msgstr "Algemeen"
-
-msgid "Moonraker host:"
-msgstr "Moonraker-host:"
-
-msgid "192.168.0.42"
-msgstr "192.168.0.42"
-
-msgid "Port:"
-msgstr "Poort:"
-
-msgid "TLS:"
-msgstr "TLS:"
-
-msgid "Use TLS (wss)"
-msgstr "TLS gebruiken (wss)"
-
-msgid "API key or token:"
-msgstr "API-sleutel of token:"
-
-msgid "Optional"
-msgstr "Optioneel"
-
-msgid "WebSocket path:"
-msgstr "WebSocket-pad:"
-
-msgid "/websocket"
-msgstr "/websocket"
-
-msgid "Chart interval (ms):"
-msgstr "Grafiek-interval (ms):"
-
-msgid "Default file to start:"
-msgstr "Standaardbestand om te starten:"
-
-msgid "filename.gcode"
-msgstr "filename.gcode"
-
-msgid "Clear settings"
-msgstr "Instellingen wissen"
-
-msgid "Connecting"
-msgstr "Verbinden…"
-
-msgid "Connected"
-msgstr "Verbonden"
-
-msgid "Not configured"
-msgstr "Niet geconfigureerd"
-
-msgid "Disconnected"
-msgstr "Verbinding verbroken"
-
-msgid "Invalid JSON from server: %1"
-msgstr "Ongeldige JSON van server: %1"
-
-msgid "Server error: %1"
-msgstr "Serverfout: %1"
-
-msgid "No response from server. Check host/port, reverse proxy, or auth token."
-msgstr "Geen antwoord van de server. Controleer host/poort, reverse proxy of auth-token."
-
-msgid "Klipper Monitor"
-msgstr "Klipper-monitor"
+msgid "%1 / %2"
+msgstr "%1 / %2"
 
 msgid "%1 • %2"
 msgstr "%1 • %2"
@@ -84,32 +21,170 @@ msgstr "%1 • Geen bestand"
 msgid "%1%"
 msgstr "%1%"
 
-msgid "Nozzle"
-msgstr "Nozzle"
+msgid "/websocket"
+msgstr "/websocket"
 
-msgid "%1 / %2"
-msgstr "%1 / %2"
+msgid "192.168.0.42"
+msgstr "192.168.0.42"
+
+msgid "API key or token:"
+msgstr "API-sleutel of token:"
 
 msgid "Bed"
 msgstr "Bed"
 
-msgid "Thermals"
-msgstr "Temperaturen"
+msgid "Cancel"
+msgstr "Annuleren"
 
-msgid "Start"
-msgstr "Start"
+msgid "Chart interval (ms):"
+msgstr "Grafiek-interval (ms):"
 
-msgid "Resume"
-msgstr "Hervatten"
+msgid "Clear settings"
+msgstr "Instellingen wissen"
+
+msgid "Connected"
+msgstr "Verbonden"
+
+msgid "Connecting"
+msgstr "Verbinden…"
+
+msgid "Default file to start:"
+msgstr "Standaardbestand om te starten:"
+
+msgid "Disconnected"
+msgstr "Verbinding verbroken"
+
+msgid "Fan: %1%"
+msgstr "Ventilator: %1%"
+
+msgid "Flow: %1%"
+msgstr "Flow: %1%"
+
+msgid "General"
+msgstr "Algemeen"
+
+msgid "Home All"
+msgstr "Alles home"
+
+msgid "Home X"
+msgstr "Home X"
+
+msgid "Home Y"
+msgstr "Home Y"
+
+msgid "Home Z"
+msgstr "Home Z"
+
+msgid "Invalid JSON from server: %1"
+msgstr "Ongeldige JSON van server: %1"
+
+msgid "Jog feedrate XY (mm/min):"
+msgstr "Jog-voedingssnelheid XY (mm/min):"
+
+msgid "Jog feedrate Z (mm/min):"
+msgstr "Jog-voedingssnelheid Z (mm/min):"
+
+msgid "Jog step (mm):"
+msgstr "Jog-stap (mm):"
+
+msgid "Klipper Monitor"
+msgstr "Klipper-monitor"
+
+msgid "Moonraker host:"
+msgstr "Moonraker-host:"
+
+msgid "Motion"
+msgstr "Beweging"
+
+msgid "No response from server. Check host/port, reverse proxy, or auth token."
+msgstr "Geen antwoord van de server. Controleer host/poort, reverse proxy of auth-token."
+
+msgid "Not configured"
+msgstr "Niet geconfigureerd"
+
+msgid "Not configured. Open the settings to add your Moonraker host."
+msgstr "Niet geconfigureerd. Open de instellingen om je Moonraker-host toe te voegen."
+
+msgid "Nozzle"
+msgstr "Nozzle"
+
+msgid "Optional"
+msgstr "Optioneel"
 
 msgid "Pause"
 msgstr "Pauze"
 
-msgid "Cancel"
-msgstr "Annuleren"
+msgid "Port:"
+msgstr "Poort:"
+
+msgid "Position: absolute"
+msgstr "Positie: absoluut"
 
 msgid "Reconnect"
 msgstr "Opnieuw verbinden"
 
-msgid "Not configured. Open the settings to add your Moonraker host."
-msgstr "Niet geconfigureerd. Open de instellingen om je Moonraker-host toe te voegen."
+msgid "Resume"
+msgstr "Hervatten"
+
+msgid "Server error: %1"
+msgstr "Serverfout: %1"
+
+msgid "Speed: %1%"
+msgstr "Snelheid: %1%"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Step %1 mm"
+msgstr "Stap %1 mm"
+
+msgid "Steps"
+msgstr "Stappen"
+
+msgid "TLS:"
+msgstr "TLS:"
+
+msgid "Thermals"
+msgstr "Temperaturen"
+
+msgid "Toolhead"
+msgstr "Toolhead"
+
+msgid "Use TLS (wss)"
+msgstr "TLS gebruiken (wss)"
+
+msgid "WebSocket path:"
+msgstr "WebSocket-pad:"
+
+msgid "X"
+msgstr "X"
+
+msgid "X+"
+msgstr "X+"
+
+msgid "X-"
+msgstr "X-"
+
+msgid "X: %1  Y: %2  Z: %3"
+msgstr "X: %1  Y: %2  Z: %3"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Y+"
+msgstr "Y+"
+
+msgid "Y-"
+msgstr "Y-"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Z+"
+msgstr "Z+"
+
+msgid "Z-"
+msgstr "Z-"
+
+msgid "filename.gcode"
+msgstr "filename.gcode"

@@ -9,8 +9,12 @@ import org.kde.kirigami as Kirigami
 
 PlasmoidItem {
     id: root
-    width: 320
-    height: 240
+    implicitWidth: fullRoot.implicitWidth
+    implicitHeight: fullRoot.implicitHeight
+    Layout.minimumWidth: fullRoot.Layout.minimumWidth
+    Layout.minimumHeight: fullRoot.Layout.minimumHeight
+    Layout.preferredWidth: fullRoot.Layout.preferredWidth
+    Layout.preferredHeight: fullRoot.Layout.preferredHeight
 
     property int requestId: 0
     property var pending: ({})
@@ -25,6 +29,12 @@ PlasmoidItem {
     property real nozzleTarget: 0
     property real bedTemp: 0
     property real bedTarget: 0
+    property real posX: 0
+    property real posY: 0
+    property real posZ: 0
+    property real speedFactor: 0
+    property real flowFactor: 0
+    property real fanSpeed: 0
     property int chartX: 0
     property int maxPoints: 120
     property var nozzleSeriesRef: null
@@ -153,6 +163,26 @@ PlasmoidItem {
                 bedTarget = status.heater_bed.target_temp
             }
         }
+        if (status.motion_report && status.motion_report.live_position && status.motion_report.live_position.length >= 3) {
+            posX = status.motion_report.live_position[0]
+            posY = status.motion_report.live_position[1]
+            posZ = status.motion_report.live_position[2]
+        } else if (status.toolhead && status.toolhead.position && status.toolhead.position.length >= 3) {
+            posX = status.toolhead.position[0]
+            posY = status.toolhead.position[1]
+            posZ = status.toolhead.position[2]
+        }
+        if (status.gcode_move) {
+            if (status.gcode_move.speed_factor !== undefined) {
+                speedFactor = status.gcode_move.speed_factor
+            }
+            if (status.gcode_move.extrude_factor !== undefined) {
+                flowFactor = status.gcode_move.extrude_factor
+            }
+        }
+        if (status.fan && status.fan.speed !== undefined) {
+            fanSpeed = status.fan.speed
+        }
     }
 
     function formatTemp(value) {
@@ -220,7 +250,11 @@ PlasmoidItem {
             print_stats: null,
             virtual_sdcard: null,
             extruder: ["temperature", "target"],
-            heater_bed: ["temperature", "target"]
+            heater_bed: ["temperature", "target"],
+            toolhead: ["position", "homed_axes"],
+            motion_report: ["live_position", "live_velocity"],
+            gcode_move: ["speed_factor", "extrude_factor"],
+            fan: ["speed"]
         }
         sendRequest("printer.objects.subscribe", {
             objects: objects
@@ -234,13 +268,71 @@ PlasmoidItem {
                 print_stats: null,
                 virtual_sdcard: null,
                 extruder: null,
-                heater_bed: null
+                heater_bed: null,
+                toolhead: null,
+                motion_report: null,
+                gcode_move: null,
+                fan: null
             }
         }, function(response) {
             if (response && response.result && response.result.status) {
                 updateFromStatus(response.result.status)
             }
         })
+    }
+
+    function requestMotionSnapshot() {
+        sendRequest("printer.objects.query", {
+            objects: {
+                toolhead: ["position", "homed_axes"],
+                motion_report: ["live_position", "live_velocity"],
+                gcode_move: ["speed_factor", "extrude_factor"],
+                fan: ["speed"]
+            }
+        }, function(response) {
+            if (response && response.result && response.result.status) {
+                updateFromStatus(response.result.status)
+            }
+        })
+    }
+
+    function sendGcode(script) {
+        sendRequest("printer.gcode.script", { script: script })
+    }
+
+    function jog(axis, distance) {
+        if (!distance || distance === 0) {
+            return
+        }
+        var target = 0
+        if (axis === "X") {
+            target = posX + distance
+        } else if (axis === "Y") {
+            target = posY + distance
+        } else if (axis === "Z") {
+            target = posZ + distance
+        } else {
+            return
+        }
+        if (isNaN(target)) {
+            return
+        }
+        var feed = 0
+        if (axis === "Z") {
+            feed = plasmoid.configuration.jogFeedZ
+        } else {
+            feed = plasmoid.configuration.jogFeedXY
+        }
+        var feedPart = feed > 0 ? (" F" + feed) : ""
+        sendGcode("G90\nG1 " + axis + target.toFixed(2) + feedPart)
+    }
+
+    function homeAll() {
+        sendGcode("G28")
+    }
+
+    function homeAxis(axis) {
+        sendGcode("G28 " + axis)
     }
 
     function startPrint() {
@@ -358,6 +450,14 @@ PlasmoidItem {
         onTriggered: sampleCharts()
     }
 
+    Timer {
+        id: motionTimer
+        interval: 200
+        repeat: true
+        running: isConfigured() && connectionState === "connected"
+        onTriggered: requestMotionSnapshot()
+    }
+
     Connections {
         target: plasmoid.configuration
         function onHostChanged() { reconnect() }
@@ -373,6 +473,14 @@ PlasmoidItem {
     Component.onCompleted: reconnect()
 
     fullRepresentation: Item {
+        id: fullRoot
+        readonly property int contentMinWidth: Kirigami.Units.gridUnit * 26
+        implicitWidth: Math.max(contentMinWidth, contentLayout.implicitWidth) + Kirigami.Units.largeSpacing * 2
+        implicitHeight: contentLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
+        Layout.minimumWidth: implicitWidth
+        Layout.minimumHeight: implicitHeight
+        Layout.preferredWidth: implicitWidth
+        Layout.preferredHeight: implicitHeight
         anchors.fill: parent
 
         Rectangle {
@@ -389,9 +497,12 @@ PlasmoidItem {
         }
 
         ColumnLayout {
-            anchors.fill: parent
+            id: contentLayout
+            anchors.left: parent.left
+            anchors.top: parent.top
             anchors.margins: Kirigami.Units.largeSpacing
             spacing: Kirigami.Units.largeSpacing
+            width: Math.max(fullRoot.contentMinWidth, implicitWidth)
 
             RowLayout {
                 Layout.fillWidth: true
@@ -460,52 +571,247 @@ PlasmoidItem {
                     }
                 }
 
-                GridLayout {
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: 2
+                        rowSpacing: Kirigami.Units.smallSpacing
+                        columnSpacing: Kirigami.Units.smallSpacing
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 72
+                            radius: 12
+                            color: root.cardColor
+                            border.color: root.cardBorderColor
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Kirigami.Units.smallSpacing
+                                spacing: 2
+
+                                PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Nozzle"); opacity: 0.7 }
+                                PlasmaComponents3.Label {
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "%1 / %2", formatTemp(nozzleTemp), formatTemp(nozzleTarget))
+                                    font.weight: Font.Medium
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 72
+                            radius: 12
+                            color: root.cardColor
+                            border.color: root.cardBorderColor
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Kirigami.Units.smallSpacing
+                                spacing: 2
+
+                                PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Bed"); opacity: 0.7 }
+                                PlasmaComponents3.Label {
+                                    text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "%1 / %2", formatTemp(bedTemp), formatTemp(bedTarget))
+                                    font.weight: Font.Medium
+                                }
+                            }
+                        }
+                    }
+
+                ColumnLayout {
                     Layout.fillWidth: true
-                    columns: 2
-                    rowSpacing: Kirigami.Units.smallSpacing
-                    columnSpacing: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.smallSpacing
 
-                    Rectangle {
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 72
-                        radius: 12
-                        color: root.cardColor
-                        border.color: root.cardBorderColor
 
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: Kirigami.Units.smallSpacing
-                            spacing: 2
+                        PlasmaComponents3.Label {
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Toolhead")
+                            font.weight: Font.Medium
+                        }
 
-                            PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Nozzle"); opacity: 0.7 }
-                            PlasmaComponents3.Label {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "%1 / %2", formatTemp(nozzleTemp), formatTemp(nozzleTarget))
-                                font.weight: Font.Medium
+                        Item { Layout.fillWidth: true }
+
+                        PlasmaComponents3.Label {
+                            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Position: absolute")
+                            opacity: 0.7
+                        }
+                    }
+
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: 3
+                        rowSpacing: Kirigami.Units.smallSpacing
+                        columnSpacing: Kirigami.Units.smallSpacing
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                            radius: 10
+                            color: root.cardColor
+                            border.color: root.cardBorderColor
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Kirigami.Units.smallSpacing
+                                spacing: 2
+                                PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X"); opacity: 0.7 }
+                                PlasmaComponents3.Label { text: posX.toFixed(2) }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                            radius: 10
+                            color: root.cardColor
+                            border.color: root.cardBorderColor
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Kirigami.Units.smallSpacing
+                                spacing: 2
+                                PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y"); opacity: 0.7 }
+                                PlasmaComponents3.Label { text: posY.toFixed(2) }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                            radius: 10
+                            color: root.cardColor
+                            border.color: root.cardBorderColor
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Kirigami.Units.smallSpacing
+                                spacing: 2
+                                PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z"); opacity: 0.7 }
+                                PlasmaComponents3.Label { text: posZ.toFixed(2) }
                             }
                         }
                     }
 
-                    Rectangle {
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 72
-                        radius: 12
-                        color: root.cardColor
-                        border.color: root.cardBorderColor
+                        spacing: Kirigami.Units.mediumSpacing
+
+                        GridLayout {
+                            Layout.alignment: Qt.AlignTop
+                            columns: 3
+                            rowSpacing: Kirigami.Units.smallSpacing
+                            columnSpacing: Kirigami.Units.smallSpacing
+
+                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y+")
+                                onClicked: jog("Y", plasmoid.configuration.jogStep)
+                            }
+                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
+
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X-")
+                                onClicked: jog("X", -plasmoid.configuration.jogStep)
+                            }
+                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "X+")
+                                onClicked: jog("X", plasmoid.configuration.jogStep)
+                            }
+
+                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Y-")
+                                onClicked: jog("Y", -plasmoid.configuration.jogStep)
+                            }
+                            Item { width: Kirigami.Units.gridUnit * 3; height: Kirigami.Units.gridUnit * 3 }
+                        }
 
                         ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: Kirigami.Units.smallSpacing
-                            spacing: 2
+                            Layout.alignment: Qt.AlignTop
+                            spacing: Kirigami.Units.smallSpacing
 
-                            PlasmaComponents3.Label { text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Bed"); opacity: 0.7 }
-                            PlasmaComponents3.Label {
-                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "%1 / %2", formatTemp(bedTemp), formatTemp(bedTarget))
-                                font.weight: Font.Medium
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z+")
+                                onClicked: jog("Z", plasmoid.configuration.jogStep)
+                            }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Z-")
+                                onClicked: jog("Z", -plasmoid.configuration.jogStep)
+                            }
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        GridLayout {
+                            Layout.alignment: Qt.AlignTop
+                            columns: 3
+                            rowSpacing: Kirigami.Units.smallSpacing
+                            columnSpacing: Kirigami.Units.smallSpacing
+
+                            PlasmaComponents3.Button {
+                                Layout.columnSpan: 3
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home All")
+                                onClicked: homeAll()
+                            }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home X")
+                                onClicked: homeAxis("X")
+                            }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home Y")
+                                onClicked: homeAxis("Y")
+                            }
+                            PlasmaComponents3.Button {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Home Z")
+                                onClicked: homeAxis("Z")
                             }
                         }
                     }
 
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: Kirigami.Units.smallSpacing
+
+                            PlasmaComponents3.Label {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Steps")
+                                opacity: 0.7
+                            }
+
+                            Repeater {
+                                model: [0.1, 1, 10, 25, 50, 100]
+                                delegate: PlasmaComponents3.Button {
+                                    text: modelData.toString()
+                                    checkable: true
+                                    checked: Math.abs(plasmoid.configuration.jogStep - modelData) < 0.001
+                                    onClicked: plasmoid.configuration.jogStep = modelData
+                                }
+                            }
+                        }
+
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: Kirigami.Units.smallSpacing
+
+                            PlasmaComponents3.Label {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Speed: %1%",
+                                    (speedFactor * 100).toFixed(0))
+                            }
+                            PlasmaComponents3.Label {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Flow: %1%",
+                                    (flowFactor * 100).toFixed(0))
+                            }
+                            PlasmaComponents3.Label {
+                                text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Fan: %1%",
+                                    (fanSpeed * 100).toFixed(0))
+                            }
+                        }
+                    }
                 }
 
                 ColumnLayout {

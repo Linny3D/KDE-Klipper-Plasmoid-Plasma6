@@ -26,6 +26,18 @@
       <label>Chart update interval (ms)</label>
       <default>1000</default>
     </entry>
+    <entry name="jogStep" type="Double">
+      <label>Jog step (mm)</label>
+      <default>10</default>
+    </entry>
+    <entry name="jogFeedXY" type="Int">
+      <label>Jog feedrate XY (mm/min)</label>
+      <default>0</default>
+    </entry>
+    <entry name="jogFeedZ" type="Int">
+      <label>Jog feedrate Z (mm/min)</label>
+      <default>0</default>
+    </entry>
     <entry name="defaultFile" type="String">
       <label>Default file to start</label>
       <default></default>
