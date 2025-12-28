@@ -33,6 +33,7 @@ Open the plasmoid configuration and set:
 
 ## Localization
 
-This plasmoid ships a German translation catalog. The translation domain is
+This plasmoid ships translations for German, French, Italian, Spanish, Dutch,
+and Brazilian Portuguese. The translation domain is
 `plasma_applet_org.kde.plasma.klippermonitor` and catalogs live under
 `contents/locale/<lang>/LC_MESSAGES/`.

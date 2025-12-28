@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Klipper Monitor\n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Language: nl\n"
+"Language-Team: Dutch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "General"
+msgstr "Algemeen"
+
+msgid "Moonraker host:"
+msgstr "Moonraker-host:"
+
+msgid "192.168.0.42"
+msgstr "192.168.0.42"
+
+msgid "Port:"
+msgstr "Poort:"
+
+msgid "TLS:"
+msgstr "TLS:"
+
+msgid "Use TLS (wss)"
+msgstr "TLS gebruiken (wss)"
+
+msgid "API key or token:"
+msgstr "API-sleutel of token:"
+
+msgid "Optional"
+msgstr "Optioneel"
+
+msgid "WebSocket path:"
+msgstr "WebSocket-pad:"
+
+msgid "/websocket"
+msgstr "/websocket"
+
+msgid "Chart interval (ms):"
+msgstr "Grafiek-interval (ms):"
+
+msgid "Default file to start:"
+msgstr "Standaardbestand om te starten:"
+
+msgid "filename.gcode"
+msgstr "filename.gcode"
+
+msgid "Clear settings"
+msgstr "Instellingen wissen"
+
+msgid "Connecting"
+msgstr "Verbinden…"
+
+msgid "Connected"
+msgstr "Verbonden"
+
+msgid "Not configured"
+msgstr "Niet geconfigureerd"
+
+msgid "Disconnected"
+msgstr "Verbinding verbroken"
+
+msgid "Invalid JSON from server: %1"
+msgstr "Ongeldige JSON van server: %1"
+
+msgid "Server error: %1"
+msgstr "Serverfout: %1"
+
+msgid "No response from server. Check host/port, reverse proxy, or auth token."
+msgstr "Geen antwoord van de server. Controleer host/poort, reverse proxy of auth-token."
+
+msgid "Klipper Monitor"
+msgstr "Klipper-monitor"
+
+msgid "%1 • %2"
+msgstr "%1 • %2"
+
+msgid "%1 • No file"
+msgstr "%1 • Geen bestand"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Nozzle"
+msgstr "Nozzle"
+
+msgid "%1 / %2"
+msgstr "%1 / %2"
+
+msgid "Bed"
+msgstr "Bed"
+
+msgid "Thermals"
+msgstr "Temperaturen"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Resume"
+msgstr "Hervatten"
+
+msgid "Pause"
+msgstr "Pauze"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+msgid "Reconnect"
+msgstr "Opnieuw verbinden"
+
+msgid "Not configured. Open the settings to add your Moonraker host."
+msgstr "Niet geconfigureerd. Open de instellingen om je Moonraker-host toe te voegen."

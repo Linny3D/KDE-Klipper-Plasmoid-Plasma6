@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Klipper Monitor\n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Language: fr\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "General"
+msgstr "Général"
+
+msgid "Moonraker host:"
+msgstr "Hôte Moonraker :"
+
+msgid "192.168.0.42"
+msgstr "192.168.0.42"
+
+msgid "Port:"
+msgstr "Port :"
+
+msgid "TLS:"
+msgstr "TLS :"
+
+msgid "Use TLS (wss)"
+msgstr "Utiliser TLS (wss)"
+
+msgid "API key or token:"
+msgstr "Clé API ou jeton :"
+
+msgid "Optional"
+msgstr "Optionnel"
+
+msgid "WebSocket path:"
+msgstr "Chemin WebSocket :"
+
+msgid "/websocket"
+msgstr "/websocket"
+
+msgid "Chart interval (ms):"
+msgstr "Intervalle du graphique (ms) :"
+
+msgid "Default file to start:"
+msgstr "Fichier par défaut à démarrer :"
+
+msgid "filename.gcode"
+msgstr "filename.gcode"
+
+msgid "Clear settings"
+msgstr "Réinitialiser les paramètres"
+
+msgid "Connecting"
+msgstr "Connexion…"
+
+msgid "Connected"
+msgstr "Connecté"
+
+msgid "Not configured"
+msgstr "Non configuré"
+
+msgid "Disconnected"
+msgstr "Déconnecté"
+
+msgid "Invalid JSON from server: %1"
+msgstr "JSON invalide du serveur : %1"
+
+msgid "Server error: %1"
+msgstr "Erreur du serveur : %1"
+
+msgid "No response from server. Check host/port, reverse proxy, or auth token."
+msgstr "Aucune réponse du serveur. Vérifiez l’hôte/le port, le proxy inverse ou le jeton d’authentification."
+
+msgid "Klipper Monitor"
+msgstr "Moniteur Klipper"
+
+msgid "%1 • %2"
+msgstr "%1 • %2"
+
+msgid "%1 • No file"
+msgstr "%1 • Aucun fichier"
+
+msgid "%1%"
+msgstr "%1 %"
+
+msgid "Nozzle"
+msgstr "Buse"
+
+msgid "%1 / %2"
+msgstr "%1 / %2"
+
+msgid "Bed"
+msgstr "Plateau"
+
+msgid "Thermals"
+msgstr "Températures"
+
+msgid "Start"
+msgstr "Démarrer"
+
+msgid "Resume"
+msgstr "Reprendre"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Reconnect"
+msgstr "Reconnecter"
+
+msgid "Not configured. Open the settings to add your Moonraker host."
+msgstr "Non configuré. Ouvrez les paramètres pour ajouter votre hôte Moonraker."

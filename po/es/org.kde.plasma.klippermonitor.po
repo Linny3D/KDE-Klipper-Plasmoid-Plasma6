@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Klipper Monitor\n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Language: es\n"
+"Language-Team: Spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "General"
+msgstr "General"
+
+msgid "Moonraker host:"
+msgstr "Host de Moonraker:"
+
+msgid "192.168.0.42"
+msgstr "192.168.0.42"
+
+msgid "Port:"
+msgstr "Puerto:"
+
+msgid "TLS:"
+msgstr "TLS:"
+
+msgid "Use TLS (wss)"
+msgstr "Usar TLS (wss)"
+
+msgid "API key or token:"
+msgstr "Clave API o token:"
+
+msgid "Optional"
+msgstr "Opcional"
+
+msgid "WebSocket path:"
+msgstr "Ruta WebSocket:"
+
+msgid "/websocket"
+msgstr "/websocket"
+
+msgid "Chart interval (ms):"
+msgstr "Intervalo del gráfico (ms):"
+
+msgid "Default file to start:"
+msgstr "Archivo predeterminado para iniciar:"
+
+msgid "filename.gcode"
+msgstr "filename.gcode"
+
+msgid "Clear settings"
+msgstr "Restablecer ajustes"
+
+msgid "Connecting"
+msgstr "Conectando…"
+
+msgid "Connected"
+msgstr "Conectado"
+
+msgid "Not configured"
+msgstr "No configurado"
+
+msgid "Disconnected"
+msgstr "Desconectado"
+
+msgid "Invalid JSON from server: %1"
+msgstr "JSON no válido del servidor: %1"
+
+msgid "Server error: %1"
+msgstr "Error del servidor: %1"
+
+msgid "No response from server. Check host/port, reverse proxy, or auth token."
+msgstr "Sin respuesta del servidor. Comprueba host/puerto, proxy inverso o token de autenticación."
+
+msgid "Klipper Monitor"
+msgstr "Monitor de Klipper"
+
+msgid "%1 • %2"
+msgstr "%1 • %2"
+
+msgid "%1 • No file"
+msgstr "%1 • Sin archivo"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Nozzle"
+msgstr "Boquilla"
+
+msgid "%1 / %2"
+msgstr "%1 / %2"
+
+msgid "Bed"
+msgstr "Cama"
+
+msgid "Thermals"
+msgstr "Temperaturas"
+
+msgid "Start"
+msgstr "Iniciar"
+
+msgid "Resume"
+msgstr "Reanudar"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Reconnect"
+msgstr "Reconectar"
+
+msgid "Not configured. Open the settings to add your Moonraker host."
+msgstr "No configurado. Abre los ajustes para añadir tu host de Moonraker."
