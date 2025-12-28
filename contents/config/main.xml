@@ -1,0 +1,34 @@
+<!DOCTYPE kcfg SYSTEM "kcfg.dtd">
+<kcfg>
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="host" type="String">
+      <label>Moonraker host</label>
+      <default></default>
+    </entry>
+    <entry name="port" type="Int">
+      <label>Moonraker port</label>
+      <default>0</default>
+    </entry>
+    <entry name="useTls" type="Bool">
+      <label>Use TLS (wss)</label>
+      <default>false</default>
+    </entry>
+    <entry name="apiKey" type="String">
+      <label>API key or token</label>
+      <default></default>
+    </entry>
+    <entry name="wsPath" type="String">
+      <label>WebSocket path</label>
+      <default>/websocket</default>
+    </entry>
+    <entry name="chartIntervalMs" type="Int">
+      <label>Chart update interval (ms)</label>
+      <default>1000</default>
+    </entry>
+    <entry name="defaultFile" type="String">
+      <label>Default file to start</label>
+      <default></default>
+    </entry>
+  </group>
+</kcfg>

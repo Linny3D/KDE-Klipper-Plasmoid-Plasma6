@@ -1,0 +1,15 @@
+{
+  "KPlugin": {
+    "Id": "org.kde.plasma.klippermonitor",
+    "Name": "Klipper Monitor",
+    "Description": "Monitor and control a Klipper printer via Moonraker",
+    "Icon": "printer",
+    "Version": "0.1.0",
+    "License": "GPL-3.0+",
+    "X-KDE-Translation-Domain": "plasma_applet_org.kde.plasma.klippermonitor"
+  },
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API": "declarativeappletscript",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-MainScript": "ui/main.qml"
+}
