@@ -78,6 +78,12 @@ and Brazilian Portuguese. The translation domain is
 `plasma_applet_org.kde.plasma.klippermonitor` and catalogs live under
 `contents/locale/<lang>/LC_MESSAGES/`.
 
+To regenerate `.mo` files from the `po/` sources:
+
+```bash
+python3 scripts/compile_mo.py
+```
+
 ## Troubleshooting
 
 - No files listed: ensure Moonraker’s `server.files.list` is available and your
