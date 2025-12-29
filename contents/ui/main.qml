@@ -9,6 +9,7 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.kirigami as Kirigami
 import "i18n.js" as I18n
+import "components" as Components
 
 PlasmoidItem {
     id: root
@@ -60,6 +61,8 @@ PlasmoidItem {
     property color accentAltColor: Qt.lighter(PlasmaCore.Theme.highlightColor, 1.4)
     property color cardColor: colorWithAlpha(PlasmaCore.Theme.backgroundColor, 0.85)
     property color cardBorderColor: colorWithAlpha(PlasmaCore.Theme.textColor, 0.12)
+    property bool compactMode: root.width < Kirigami.Units.gridUnit * 30
+    property int layoutColumns: root.width < Kirigami.Units.gridUnit * 44 ? 1 : 2
 
     function colorWithAlpha(c, a) {
         return Qt.rgba(c.r, c.g, c.b, a)
@@ -561,7 +564,7 @@ PlasmoidItem {
 
     fullRepresentation: Item {
         id: fullRoot
-        readonly property int contentMinWidth: Kirigami.Units.gridUnit * 26
+        readonly property int contentMinWidth: Kirigami.Units.gridUnit * 18
         implicitWidth: Math.max(contentMinWidth, contentLayout.implicitWidth) + Kirigami.Units.largeSpacing * 2
         implicitHeight: contentLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
         Layout.minimumWidth: implicitWidth
@@ -586,407 +589,276 @@ PlasmoidItem {
         ColumnLayout {
             id: contentLayout
             anchors.left: parent.left
+            anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: Kirigami.Units.largeSpacing
             spacing: Kirigami.Units.largeSpacing
-            width: Math.max(fullRoot.contentMinWidth, implicitWidth)
+            width: parent.width - Kirigami.Units.largeSpacing * 2
 
-            RowLayout {
+            Components.Card {
                 Layout.fillWidth: true
-                spacing: Kirigami.Units.smallSpacing
+                title: ""
 
-                ColumnLayout {
+                RowLayout {
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.mediumSpacing
 
-                    PlasmaComponents3.Label {
-                        text: tr("Klipper Monitor")
-                        font.weight: Font.DemiBold
-                        font.pointSize: PlasmaCore.Theme.defaultFont.pointSize + 4
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+
+                        PlasmaComponents3.Label {
+                            text: tr("Klipper Monitor")
+                            font.weight: Font.DemiBold
+                            font.pointSize: PlasmaCore.Theme.defaultFont.pointSize + 4
+                        }
+
+                        PlasmaComponents3.Label {
+                            text: filename ? tr("%1 • %2", printerState, filename) : tr("%1 • No file", printerState)
+                            opacity: 0.7
+                            elide: Text.ElideRight
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Kirigami.Units.smallSpacing
+
+                            PlasmaComponents3.ProgressBar {
+                                Layout.fillWidth: true
+                                visible: connectionState === "connected" && progress > 0
+                                from: 0
+                                to: 1
+                                value: progress
+                            }
+
+                            PlasmaComponents3.Label {
+                                visible: connectionState === "connected" && progress > 0
+                                text: tr("%1%", (progress * 100).toFixed(1))
+                                font.weight: Font.Medium
+                                Layout.minimumWidth: Kirigami.Units.gridUnit * 4
+                                horizontalAlignment: Text.AlignRight
+                                opacity: 0.85
+                            }
+                        }
                     }
 
-                    PlasmaComponents3.Label {
-                        text: filename ? tr("%1 • %2", printerState, filename) : tr("%1 • No file", printerState)
-                        opacity: 0.7
-                        elide: Text.ElideRight
+                    PlasmaComponents3.Button {
+                        text: root.compactMode ? "" : (connectionState === "connected" ? tr("Reconnect") : tr("Connect"))
+                        icon.name: connectionState === "connected" ? "view-refresh" : "network-connect"
+                        display: root.compactMode ? PlasmaComponents3.AbstractButton.IconOnly : PlasmaComponents3.AbstractButton.TextBesideIcon
+                        onClicked: reconnect()
                     }
-                }
 
-                Rectangle {
-                    Layout.preferredWidth: 120
-                    Layout.preferredHeight: 32
-                    radius: 16
-                    color: connectionState === "connected"
-                        ? root.colorWithAlpha(root.accentColor, 0.20)
-                        : connectionState === "connecting"
-                            ? root.colorWithAlpha(PlasmaCore.Theme.textColor, 0.12)
-                            : root.colorWithAlpha(PlasmaCore.Theme.negativeTextColor, 0.18)
-                    border.color: connectionState === "connected"
-                        ? root.colorWithAlpha(root.accentColor, 0.55)
-                        : connectionState === "connecting"
-                            ? root.colorWithAlpha(PlasmaCore.Theme.textColor, 0.35)
-                            : root.colorWithAlpha(PlasmaCore.Theme.negativeTextColor, 0.55)
+                    Rectangle {
+                        Layout.preferredWidth: root.compactMode ? 100 : 120
+                        Layout.preferredHeight: 32
+                        radius: 16
+                        color: connectionState === "connected"
+                            ? root.colorWithAlpha(root.accentColor, 0.20)
+                            : connectionState === "connecting"
+                                ? root.colorWithAlpha(PlasmaCore.Theme.textColor, 0.12)
+                                : root.colorWithAlpha(PlasmaCore.Theme.negativeTextColor, 0.18)
+                        border.color: connectionState === "connected"
+                            ? root.colorWithAlpha(root.accentColor, 0.55)
+                            : connectionState === "connecting"
+                                ? root.colorWithAlpha(PlasmaCore.Theme.textColor, 0.35)
+                                : root.colorWithAlpha(PlasmaCore.Theme.negativeTextColor, 0.55)
 
-                    PlasmaComponents3.Label {
-                        anchors.centerIn: parent
-                        text: connectionStateText()
-                        font.weight: Font.Medium
+                        PlasmaComponents3.Label {
+                            anchors.centerIn: parent
+                            text: connectionStateText()
+                            font.weight: Font.Medium
+                        }
                     }
-                }
 
-                PlasmaComponents3.Switch {
-                    text: tr("Enabled")
-                    checked: plasmoid.configuration.enableConnections
-                    onToggled: plasmoid.configuration.enableConnections = checked
+                    PlasmaComponents3.Switch {
+                        text: root.compactMode ? "" : tr("Enabled")
+                        checked: plasmoid.configuration.enableConnections
+                        onToggled: plasmoid.configuration.enableConnections = checked
+                    }
                 }
             }
 
             ColumnLayout {
                 Layout.fillWidth: true
                 visible: isConfigured()
-                spacing: Kirigami.Units.mediumSpacing
+                spacing: Kirigami.Units.largeSpacing
                 enabled: isEnabled()
                 opacity: isEnabled() ? 1.0 : 0.35
 
-                RowLayout {
+                GridLayout {
                     Layout.fillWidth: true
+                    columns: root.layoutColumns
+                    columnSpacing: Kirigami.Units.largeSpacing
+                    rowSpacing: Kirigami.Units.largeSpacing
 
-                    PlasmaComponents3.ProgressBar {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        from: 0
-                        to: 1
-                        value: progress
-                    }
+                        spacing: Kirigami.Units.largeSpacing
 
-                    PlasmaComponents3.Label {
-                        text: tr("%1%", (progress * 100).toFixed(1))
-                        font.weight: Font.Medium
-                        Layout.minimumWidth: Kirigami.Units.gridUnit * 4
-                        horizontalAlignment: Text.AlignRight
-                    }
-                }
-
-                    GridLayout {
-                        Layout.fillWidth: true
-                        columns: 2
-                        rowSpacing: Kirigami.Units.smallSpacing
-                        columnSpacing: Kirigami.Units.smallSpacing
-
-                        Rectangle {
+                        Components.Card {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 72
-                            radius: 12
-                            color: root.cardColor
-                            border.color: root.cardBorderColor
+                            title: tr("Temperatures")
 
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: Kirigami.Units.smallSpacing
-                                spacing: 2
-
-                                PlasmaComponents3.Label { text: tr("Nozzle"); opacity: 0.7 }
-                                PlasmaComponents3.Label {
-                                    text: tr("%1 / %2", formatTemp(nozzleTemp), formatTemp(nozzleTarget))
-                                    font.weight: Font.Medium
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 72
-                            radius: 12
-                            color: root.cardColor
-                            border.color: root.cardBorderColor
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: Kirigami.Units.smallSpacing
-                                spacing: 2
-
-                                PlasmaComponents3.Label { text: tr("Bed"); opacity: 0.7 }
-                                PlasmaComponents3.Label {
-                                    text: tr("%1 / %2", formatTemp(bedTemp), formatTemp(bedTarget))
-                                    font.weight: Font.Medium
-                                }
-                            }
-                        }
-                    }
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
-
-                    RowLayout {
-                        Layout.fillWidth: true
-
-                        PlasmaComponents3.Label {
-                            text: tr("Toolhead")
-                            font.weight: Font.Medium
-                        }
-
-                        Item { Layout.fillWidth: true }
-
-                        PlasmaComponents3.Label {
-                            text: tr("Position: absolute")
-                            opacity: 0.7
-                        }
-                    }
-
-                    GridLayout {
-                        Layout.fillWidth: true
-                        columns: 3
-                        rowSpacing: Kirigami.Units.smallSpacing
-                        columnSpacing: Kirigami.Units.smallSpacing
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 56
-                            radius: 10
-                            color: root.cardColor
-                            border.color: root.cardBorderColor
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: Kirigami.Units.smallSpacing
-                                spacing: 2
-                                PlasmaComponents3.Label { text: tr("X"); opacity: 0.7 }
-                                PlasmaComponents3.Label { text: posX.toFixed(2) }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 56
-                            radius: 10
-                            color: root.cardColor
-                            border.color: root.cardBorderColor
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: Kirigami.Units.smallSpacing
-                                spacing: 2
-                                PlasmaComponents3.Label { text: tr("Y"); opacity: 0.7 }
-                                PlasmaComponents3.Label { text: posY.toFixed(2) }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 56
-                            radius: 10
-                            color: root.cardColor
-                            border.color: root.cardBorderColor
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: Kirigami.Units.smallSpacing
-                                spacing: 2
-                                PlasmaComponents3.Label { text: tr("Z"); opacity: 0.7 }
-                                PlasmaComponents3.Label { text: posZ.toFixed(2) }
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: Kirigami.Units.mediumSpacing
-
-                        Item {
-                            id: jogPad
-                            Layout.preferredWidth: Kirigami.Units.gridUnit * 9
-                            Layout.preferredHeight: Kirigami.Units.gridUnit * 9
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: Math.min(parent.width, parent.height)
-                                height: width
-                                radius: width / 2
-                                color: root.colorWithAlpha(root.accentColor, 0.08)
-                                border.color: root.colorWithAlpha(PlasmaCore.Theme.textColor, 0.2)
-                                border.width: 1
-                            }
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width * 0.56
-                                height: width
-                                radius: width / 2
-                                color: root.colorWithAlpha(PlasmaCore.Theme.backgroundColor, 0.9)
-                                border.color: root.cardBorderColor
-                                border.width: 1
-                            }
-
-                            Rectangle {
-                                id: jogUp
-                                width: Kirigami.Units.gridUnit * 2.3
-                                height: width
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.top: parent.top
-                                anchors.topMargin: Kirigami.Units.smallSpacing
-                                radius: 6
-                                color: root.cardColor
-                                border.color: root.cardBorderColor
-                                PlasmaComponents3.Label {
-                                    anchors.centerIn: parent
-                                    text: tr("Y+")
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: jog("Y", plasmoid.configuration.jogStep)
-                                }
-                            }
-
-                            Rectangle {
-                                id: jogDown
-                                width: Kirigami.Units.gridUnit * 2.3
-                                height: width
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.bottom: parent.bottom
-                                anchors.bottomMargin: Kirigami.Units.smallSpacing
-                                radius: 6
-                                color: root.cardColor
-                                border.color: root.cardBorderColor
-                                PlasmaComponents3.Label {
-                                    anchors.centerIn: parent
-                                    text: tr("Y-")
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: jog("Y", -plasmoid.configuration.jogStep)
-                                }
-                            }
-
-                            Rectangle {
-                                id: jogLeft
-                                width: Kirigami.Units.gridUnit * 2.3
-                                height: width
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.left: parent.left
-                                anchors.leftMargin: Kirigami.Units.smallSpacing
-                                radius: 6
-                                color: root.cardColor
-                                border.color: root.cardBorderColor
-                                PlasmaComponents3.Label {
-                                    anchors.centerIn: parent
-                                    text: tr("X-")
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: jog("X", -plasmoid.configuration.jogStep)
-                                }
-                            }
-
-                            Rectangle {
-                                id: jogRight
-                                width: Kirigami.Units.gridUnit * 2.3
-                                height: width
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.right: parent.right
-                                anchors.rightMargin: Kirigami.Units.smallSpacing
-                                radius: 6
-                                color: root.cardColor
-                                border.color: root.cardBorderColor
-                                PlasmaComponents3.Label {
-                                    anchors.centerIn: parent
-                                    text: tr("X+")
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: jog("X", plasmoid.configuration.jogStep)
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.alignment: Qt.AlignVCenter
-                            Layout.preferredWidth: Kirigami.Units.gridUnit * 2.6
-                            Layout.preferredHeight: Kirigami.Units.gridUnit * 6
-                            radius: 8
-                            color: root.cardColor
-                            border.color: root.cardBorderColor
-
-                            ColumnLayout {
-                                anchors.centerIn: parent
-                                spacing: Kirigami.Units.smallSpacing
-                                PlasmaComponents3.Label { text: tr("Z") }
-                                Rectangle {
-                                    width: Kirigami.Units.gridUnit * 2.0
-                                    height: Kirigami.Units.gridUnit * 2.0
-                                    radius: 6
-                                    color: root.colorWithAlpha(root.accentColor, 0.10)
-                                    border.color: root.cardBorderColor
-                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Z+") }
-                                    MouseArea { anchors.fill: parent; onClicked: jog("Z", plasmoid.configuration.jogStep) }
-                                }
-                                Rectangle {
-                                    width: Kirigami.Units.gridUnit * 2.0
-                                    height: Kirigami.Units.gridUnit * 2.0
-                                    radius: 6
-                                    color: root.cardColor
-                                    border.color: root.cardBorderColor
-                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Z-") }
-                                    MouseArea { anchors.fill: parent; onClicked: jog("Z", -plasmoid.configuration.jogStep) }
-                                }
-                            }
-                        }
-
-                        Item { Layout.fillWidth: true }
-
-                        ColumnLayout {
-                            Layout.alignment: Qt.AlignTop
-                            spacing: Kirigami.Units.smallSpacing
-
-                            Rectangle {
+                            GridLayout {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: Kirigami.Units.gridUnit * 2.2
-                                radius: 8
-                                color: root.colorWithAlpha(root.accentColor, 0.15)
-                                border.color: root.cardBorderColor
+                                columns: root.compactMode ? 1 : 2
+                                columnSpacing: Kirigami.Units.smallSpacing
+                                rowSpacing: Kirigami.Units.smallSpacing
 
-                                PlasmaComponents3.Label {
-                                    anchors.centerIn: parent
-                                    text: tr("Home All")
-                                    font.weight: Font.Medium
+                                Components.StatTile {
+                                    Layout.fillWidth: true
+                                    label: tr("Nozzle")
+                                    value: root.formatTemp(root.nozzleTemp)
+                                    secondary: tr("Target: %1", root.formatTemp(root.nozzleTarget))
                                 }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: homeAll()
+
+                                Components.StatTile {
+                                    Layout.fillWidth: true
+                                    label: tr("Bed")
+                                    value: root.formatTemp(root.bedTemp)
+                                    secondary: tr("Target: %1", root.formatTemp(root.bedTarget))
                                 }
                             }
+                        }
 
-                            RowLayout {
+                        Components.Card {
+                            Layout.fillWidth: true
+                            title: tr("Status")
+
+                            ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: Kirigami.Units.smallSpacing
 
-                                Rectangle {
+                                GridLayout {
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.0
-                                    radius: 8
-                                    color: root.cardColor
-                                    border.color: root.cardBorderColor
-                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Home X") }
-                                    MouseArea { anchors.fill: parent; onClicked: homeAxis("X") }
+                                    columns: root.compactMode ? 2 : 3
+                                    columnSpacing: Kirigami.Units.smallSpacing
+                                    rowSpacing: Kirigami.Units.smallSpacing
+                                    Components.StatTile { Layout.fillWidth: true; label: "X"; value: root.posX.toFixed(2) }
+                                    Components.StatTile { Layout.fillWidth: true; label: "Y"; value: root.posY.toFixed(2) }
+                                    Components.StatTile { Layout.fillWidth: true; label: "Z"; value: root.posZ.toFixed(2) }
                                 }
 
-                                Rectangle {
+                                PlasmaComponents3.Label {
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.0
-                                    radius: 8
-                                    color: root.cardColor
-                                    border.color: root.cardBorderColor
-                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Home Y") }
-                                    MouseArea { anchors.fill: parent; onClicked: homeAxis("Y") }
+                                    text: tr("Speed: %1% • Flow: %2% • Fan: %3%", Math.round(root.speedFactor * 100), Math.round(root.flowFactor * 100), Math.round(root.fanSpeed * 100))
+                                    opacity: 0.8
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+
+                        Components.Card {
+                            Layout.fillWidth: true
+                            title: tr("Temperatures (Chart)")
+
+                            ChartView {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Kirigami.Units.gridUnit * 6.5
+                                antialiasing: true
+                                legend.visible: false
+                                backgroundColor: "transparent"
+                                margins { left: 8; right: 8; top: 4; bottom: 4 }
+
+                                ValueAxis {
+                                    id: tempAxisX
+                                    min: Math.max(0, root.chartX - root.maxPoints)
+                                    max: Math.max(root.maxPoints, root.chartX)
+                                    labelsVisible: false
+                                    gridVisible: false
+                                    lineVisible: false
+                                }
+                                ValueAxis {
+                                    id: tempAxisY
+                                    min: root.tempAxisMin
+                                    max: root.tempAxisMax
+                                    labelsVisible: false
+                                    gridVisible: true
+                                    lineVisible: false
                                 }
 
-                                Rectangle {
+                                LineSeries {
+                                    id: nozzleSeries
+                                    axisX: tempAxisX
+                                    axisY: tempAxisY
+                                    color: root.accentColor
+                                    width: 2.0
+                                    Component.onCompleted: root.nozzleSeriesRef = nozzleSeries
+                                }
+                                LineSeries {
+                                    id: bedSeries
+                                    axisX: tempAxisX
+                                    axisY: tempAxisY
+                                    color: root.accentAltColor
+                                    width: 2.0
+                                    Component.onCompleted: root.bedSeriesRef = bedSeries
+                                }
+                            }
+                        }
+
+                        Components.Card {
+                            Layout.fillWidth: true
+                            title: tr("Files")
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Kirigami.Units.smallSpacing
+
+                                RowLayout {
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.0
-                                    radius: 8
-                                    color: root.cardColor
-                                    border.color: root.cardBorderColor
-                                    PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Home Z") }
-                                    MouseArea { anchors.fill: parent; onClicked: homeAxis("Z") }
+                                    spacing: Kirigami.Units.smallSpacing
+
+                                    PlasmaComponents3.ComboBox {
+                                        id: fileCombo
+                                        Layout.fillWidth: true
+                                        model: gcodeFiles
+                                        currentIndex: gcodeFiles.indexOf(selectedFile)
+                                        onActivated: selectedFile = gcodeFiles[currentIndex]
+                                        enabled: gcodeFiles.length > 0
+                                    }
+
+                                    PlasmaComponents3.Button {
+                                        text: root.compactMode ? "" : tr("Refresh")
+                                        icon.name: "view-refresh"
+                                        display: root.compactMode ? PlasmaComponents3.AbstractButton.IconOnly : PlasmaComponents3.AbstractButton.TextBesideIcon
+                                        onClicked: refreshFiles()
+                                    }
+                                }
+
+                                Flow {
+                                    Layout.fillWidth: true
+                                    spacing: Kirigami.Units.smallSpacing
+
+                                    PlasmaComponents3.Button {
+                                        text: root.compactMode ? "" : tr("Start")
+                                        icon.name: "media-playback-start"
+                                        display: root.compactMode ? PlasmaComponents3.AbstractButton.IconOnly : PlasmaComponents3.AbstractButton.TextBesideIcon
+                                        enabled: gcodeFiles.length > 0
+                                        onClicked: startPrint()
+                                    }
+
+                                    PlasmaComponents3.Button {
+                                        text: root.compactMode ? "" : (printerState === "paused" ? tr("Resume") : tr("Pause"))
+                                        icon.name: printerState === "paused" ? "media-playback-start" : "media-playback-pause"
+                                        display: root.compactMode ? PlasmaComponents3.AbstractButton.IconOnly : PlasmaComponents3.AbstractButton.TextBesideIcon
+                                        onClicked: printerState === "paused" ? resumePrint() : pausePrint()
+                                    }
+
+                                    PlasmaComponents3.Button {
+                                        text: root.compactMode ? "" : tr("Cancel")
+                                        icon.name: "process-stop"
+                                        display: root.compactMode ? PlasmaComponents3.AbstractButton.IconOnly : PlasmaComponents3.AbstractButton.TextBesideIcon
+                                        onClicked: cancelPrint()
+                                    }
+                                }
+
+                                PlasmaComponents3.Label {
+                                    Layout.fillWidth: true
+                                    visible: gcodeFiles.length === 0
+                                    text: tr("No files found on virtual SD card.")
+                                    opacity: 0.7
+                                    wrapMode: Text.Wrap
                                 }
                             }
                         }
@@ -994,215 +866,178 @@ PlasmoidItem {
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.largeSpacing
 
-                        Flow {
+                        Components.Card {
                             Layout.fillWidth: true
-                            spacing: Kirigami.Units.smallSpacing
+                            title: tr("Controls")
 
-                            PlasmaComponents3.Label {
-                                text: tr("Steps")
-                                opacity: 0.7
-                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Kirigami.Units.mediumSpacing
 
-                            Repeater {
-                                model: [0.1, 1, 10, 25, 50, 100]
-                                delegate: PlasmaComponents3.Button {
-                                    text: modelData.toString()
-                                    checkable: true
-                                    checked: Math.abs(plasmoid.configuration.jogStep - modelData) < 0.001
-                                    onClicked: plasmoid.configuration.jogStep = modelData
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: Kirigami.Units.smallSpacing
+                                    PlasmaComponents3.Label { text: tr("Jog Step"); opacity: 0.7 }
+                                    Item { Layout.fillWidth: true }
+                                    PlasmaComponents3.Label { text: tr("%1 mm", plasmoid.configuration.jogStep.toFixed(1)); opacity: 0.85 }
+                                }
+
+                                Flow {
+                                    Layout.fillWidth: true
+                                    spacing: Kirigami.Units.smallSpacing
+
+                                    Repeater {
+                                        model: [0.1, 1, 10, 25, 50, 100]
+                                        delegate: PlasmaComponents3.Button {
+                                            text: modelData.toString()
+                                            checkable: true
+                                            checked: Math.abs(plasmoid.configuration.jogStep - modelData) < 0.001
+                                            onClicked: plasmoid.configuration.jogStep = modelData
+                                        }
+                                    }
+                                }
+
+                                GridLayout {
+                                    Layout.fillWidth: true
+                                    columns: root.compactMode ? 1 : 2
+                                    columnSpacing: Kirigami.Units.mediumSpacing
+                                    rowSpacing: Kirigami.Units.mediumSpacing
+
+                                    Item {
+                                        Layout.fillWidth: root.compactMode
+                                        Layout.preferredWidth: Kirigami.Units.gridUnit * 8
+                                        Layout.preferredHeight: Kirigami.Units.gridUnit * 8
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: root.colorWithAlpha(root.accentColor, 0.10)
+                                            border.color: root.cardBorderColor
+                                        }
+
+                                        Rectangle {
+                                            width: Kirigami.Units.gridUnit * 2.3
+                                            height: width
+                                            radius: Kirigami.Units.largeSpacing
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            anchors.top: parent.top
+                                            anchors.topMargin: Kirigami.Units.smallSpacing
+                                            color: root.cardColor
+                                            border.color: root.cardBorderColor
+                                            PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Y+") }
+                                            MouseArea { anchors.fill: parent; onClicked: jog("Y", plasmoid.configuration.jogStep) }
+                                        }
+
+                                        Rectangle {
+                                            width: Kirigami.Units.gridUnit * 2.3
+                                            height: width
+                                            radius: Kirigami.Units.largeSpacing
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            anchors.bottom: parent.bottom
+                                            anchors.bottomMargin: Kirigami.Units.smallSpacing
+                                            color: root.cardColor
+                                            border.color: root.cardBorderColor
+                                            PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Y-") }
+                                            MouseArea { anchors.fill: parent; onClicked: jog("Y", -plasmoid.configuration.jogStep) }
+                                        }
+
+                                        Rectangle {
+                                            width: Kirigami.Units.gridUnit * 2.3
+                                            height: width
+                                            radius: Kirigami.Units.largeSpacing
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: Kirigami.Units.smallSpacing
+                                            color: root.cardColor
+                                            border.color: root.cardBorderColor
+                                            PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("X-") }
+                                            MouseArea { anchors.fill: parent; onClicked: jog("X", -plasmoid.configuration.jogStep) }
+                                        }
+
+                                        Rectangle {
+                                            width: Kirigami.Units.gridUnit * 2.3
+                                            height: width
+                                            radius: Kirigami.Units.largeSpacing
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.right: parent.right
+                                            anchors.rightMargin: Kirigami.Units.smallSpacing
+                                            color: root.cardColor
+                                            border.color: root.cardBorderColor
+                                            PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("X+") }
+                                            MouseArea { anchors.fill: parent; onClicked: jog("X", plasmoid.configuration.jogStep) }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: root.compactMode
+                                        Layout.alignment: Qt.AlignVCenter
+                                        Layout.preferredWidth: Kirigami.Units.gridUnit * 2.8
+                                        Layout.preferredHeight: Kirigami.Units.gridUnit * 8
+                                        radius: Kirigami.Units.largeSpacing
+                                        color: root.cardColor
+                                        border.color: root.cardBorderColor
+
+                                        ColumnLayout {
+                                            anchors.centerIn: parent
+                                            spacing: Kirigami.Units.smallSpacing
+                                            PlasmaComponents3.Label { text: tr("Z") }
+                                            Rectangle {
+                                                width: Kirigami.Units.gridUnit * 2.0
+                                                height: Kirigami.Units.gridUnit * 2.0
+                                                radius: Kirigami.Units.largeSpacing
+                                                color: root.colorWithAlpha(root.accentColor, 0.10)
+                                                border.color: root.cardBorderColor
+                                                PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Z+") }
+                                                MouseArea { anchors.fill: parent; onClicked: jog("Z", plasmoid.configuration.jogStep) }
+                                            }
+                                            Rectangle {
+                                                width: Kirigami.Units.gridUnit * 2.0
+                                                height: Kirigami.Units.gridUnit * 2.0
+                                                radius: Kirigami.Units.largeSpacing
+                                                color: root.cardColor
+                                                border.color: root.cardBorderColor
+                                                PlasmaComponents3.Label { anchors.centerIn: parent; text: tr("Z-") }
+                                                MouseArea { anchors.fill: parent; onClicked: jog("Z", -plasmoid.configuration.jogStep) }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                PlasmaComponents3.Button {
+                                    Layout.fillWidth: true
+                                    text: tr("Home All")
+                                    icon.name: "go-home"
+                                    onClicked: homeAll()
+                                }
+
+                                GridLayout {
+                                    Layout.fillWidth: true
+                                    columns: 3
+                                    columnSpacing: Kirigami.Units.smallSpacing
+                                    rowSpacing: Kirigami.Units.smallSpacing
+                                    PlasmaComponents3.Button { Layout.fillWidth: true; text: tr("Home X"); onClicked: homeAxis("X") }
+                                    PlasmaComponents3.Button { Layout.fillWidth: true; text: tr("Home Y"); onClicked: homeAxis("Y") }
+                                    PlasmaComponents3.Button { Layout.fillWidth: true; text: tr("Home Z"); onClicked: homeAxis("Z") }
                                 }
                             }
                         }
-
-                        Flow {
-                            Layout.fillWidth: true
-                            spacing: Kirigami.Units.smallSpacing
-
-                            PlasmaComponents3.Label {
-                                text: tr("Speed: %1%",
-                                    (speedFactor * 100).toFixed(0))
-                            }
-                            PlasmaComponents3.Label {
-                                text: tr("Flow: %1%",
-                                    (flowFactor * 100).toFixed(0))
-                            }
-                            PlasmaComponents3.Label {
-                                text: tr("Fan: %1%",
-                                    (fanSpeed * 100).toFixed(0))
-                            }
-                        }
                     }
                 }
 
-                ColumnLayout {
+                Kirigami.InlineMessage {
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
-
-                    RowLayout {
-                        Layout.fillWidth: true
-
-                        PlasmaComponents3.Label {
-                            text: tr("Thermals")
-                            font.weight: Font.Medium
-                        }
-
-                        Item { Layout.fillWidth: true }
-
-                        RowLayout {
-                            spacing: Kirigami.Units.smallSpacing
-
-                            Rectangle { width: 10; height: 10; radius: 3; color: root.accentColor }
-                            PlasmaComponents3.Label { text: tr("Nozzle") }
-                            Rectangle { width: 10; height: 10; radius: 3; color: root.accentAltColor }
-                            PlasmaComponents3.Label { text: tr("Bed") }
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
-
-                        Item {
-                            Layout.preferredWidth: Kirigami.Units.gridUnit * 3
-                            Layout.fillHeight: true
-
-                            Repeater {
-                                model: root.tempAxisTicks
-
-                                PlasmaComponents3.Label {
-                                    width: parent.width
-                                    horizontalAlignment: Text.AlignRight
-                                    text: formatTemp(root.tempAxisValueAt(index))
-                                    opacity: 0.7
-                                    font.pixelSize: Math.max(8, PlasmaCore.Theme.defaultFont.pixelSize - 2)
-                                    y: (parent.height - height) * (root.tempAxisTicks > 1
-                                        ? (index / (root.tempAxisTicks - 1))
-                                        : 0)
-                                }
-                            }
-                        }
-
-                        ChartView {
-                            id: tempChart
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 120
-                            antialiasing: true
-                            legend.visible: false
-                            backgroundColor: "transparent"
-                            margins { left: 8; right: 8; top: 4; bottom: 4 }
-
-                            ValueAxis {
-                                id: tempAxisX
-                                min: Math.max(0, root.chartX - root.maxPoints)
-                                max: Math.max(root.maxPoints, root.chartX)
-                                labelsVisible: false
-                                gridVisible: false
-                                lineVisible: false
-                            }
-                            ValueAxis {
-                                id: tempAxisY
-                                min: root.tempAxisMin
-                                max: root.tempAxisMax
-                                labelsVisible: false
-                                gridVisible: true
-                                lineVisible: false
-                            }
-
-                        LineSeries {
-                            id: nozzleSeries
-                            axisX: tempAxisX
-                            axisY: tempAxisY
-                            color: root.accentColor
-                            width: 2.0
-                            Component.onCompleted: root.nozzleSeriesRef = nozzleSeries
-                        }
-                        LineSeries {
-                            id: bedSeries
-                            axisX: tempAxisX
-                            axisY: tempAxisY
-                            color: root.accentAltColor
-                            width: 2.0
-                            Component.onCompleted: root.bedSeriesRef = bedSeries
-                        }
-                        }
-                    }
-                }
-
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
-
-                        PlasmaComponents3.Label {
-                            text: tr("Files")
-                            opacity: 0.7
-                        }
-                        Item { Layout.fillWidth: true }
-                        PlasmaComponents3.Button {
-                            text: tr("Refresh files")
-                            icon.name: "view-refresh"
-                            onClicked: refreshFiles()
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
-
-                        PlasmaComponents3.ComboBox {
-                            id: fileCombo
-                            Layout.fillWidth: true
-                            model: gcodeFiles
-                            currentIndex: gcodeFiles.indexOf(selectedFile)
-                            onActivated: selectedFile = gcodeFiles[currentIndex]
-                            enabled: gcodeFiles.length > 0
-                        }
-
-                        PlasmaComponents3.Button {
-                            text: tr("Start")
-                            icon.name: "media-playback-start"
-                            enabled: gcodeFiles.length > 0
-                            onClicked: startPrint()
-                        }
-
-                        PlasmaComponents3.Button {
-                            text: printerState === "paused" ? tr("Resume") : tr("Pause")
-                            icon.name: printerState === "paused" ? "media-playback-start" : "media-playback-pause"
-                            onClicked: printerState === "paused" ? resumePrint() : pausePrint()
-                        }
-
-                        PlasmaComponents3.Button {
-                            text: tr("Cancel")
-                            icon.name: "process-stop"
-                            onClicked: cancelPrint()
-                        }
-
-                        PlasmaComponents3.Button {
-                            icon.name: "view-refresh"
-                            text: tr("Reconnect")
-                            onClicked: reconnect()
-                        }
-                    }
-
-                    PlasmaComponents3.Label {
-                        visible: gcodeFiles.length === 0
-                        text: tr("No files found on virtual SD card.")
-                        opacity: 0.7
-                    }
-                }
-
-                PlasmaComponents3.Label {
-                    Layout.fillWidth: true
-                    text: errorText
                     visible: errorText.length > 0
-                    color: PlasmaCore.Theme.negativeTextColor
-                    wrapMode: Text.Wrap
+                    text: errorText
+                    type: Kirigami.MessageType.Error
+                    actions: [
+                        Kirigami.Action {
+                            icon.name: "dialog-close"
+                            text: tr("Dismiss")
+                            onTriggered: errorText = ""
+                        }
+                    ]
                 }
             }
 
