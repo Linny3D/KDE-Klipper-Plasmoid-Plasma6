@@ -208,3 +208,30 @@ msgstr "Z-"
 
 msgid "filename.gcode"
 msgstr "filename.gcode"
+
+msgid "Language:"
+msgstr "Lingua:"
+
+msgid "System language"
+msgstr "Lingua di sistema"
+
+msgid "English"
+msgstr "Inglese"
+
+msgid "German"
+msgstr "Tedesco"
+
+msgid "French"
+msgstr "Francese"
+
+msgid "Italian"
+msgstr "Italiano"
+
+msgid "Spanish"
+msgstr "Spagnolo"
+
+msgid "Dutch"
+msgstr "Olandese"
+
+msgid "Portuguese (Brazil)"
+msgstr "Portoghese (Brasile)"

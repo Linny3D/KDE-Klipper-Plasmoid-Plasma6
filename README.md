@@ -77,11 +77,19 @@ This plasmoid ships translations for German, French, Italian, Spanish, Dutch,
 and Brazilian Portuguese. The translation domain is
 `plasma_applet_org.kde.plasma.klippermonitor` and catalogs live under
 `contents/locale/<lang>/LC_MESSAGES/`.
+You can override the UI language in the settings; leave it on System language
+to follow KDE’s locale settings.
 
 To regenerate `.mo` files from the `po/` sources:
 
 ```bash
 python3 scripts/compile_mo.py
+```
+
+To regenerate the runtime language override catalog:
+
+```bash
+python3 scripts/compile_i18n_js.py
 ```
 
 ## Troubleshooting

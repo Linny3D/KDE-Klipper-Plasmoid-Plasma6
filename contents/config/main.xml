@@ -48,5 +48,9 @@
       <label>Default file to start</label>
       <default></default>
     </entry>
+    <entry name="localeOverride" type="String">
+      <label>Locale override</label>
+      <default></default>
+    </entry>
   </group>
 </kcfg>

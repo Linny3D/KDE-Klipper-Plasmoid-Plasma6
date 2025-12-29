@@ -4,9 +4,26 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.kcmutils as KCM
+import "i18n.js" as I18n
 
 KCM.SimpleKCM {
     id: root
+    function tr(msgid, arg1, arg2, arg3) {
+        var override = cfg_localeOverride
+        if (!override) {
+            if (arg3 !== undefined) {
+                return i18nd("plasma_applet_org.kde.plasma.klippermonitor", msgid, arg1, arg2, arg3)
+            }
+            if (arg2 !== undefined) {
+                return i18nd("plasma_applet_org.kde.plasma.klippermonitor", msgid, arg1, arg2)
+            }
+            if (arg1 !== undefined) {
+                return i18nd("plasma_applet_org.kde.plasma.klippermonitor", msgid, arg1)
+            }
+            return i18nd("plasma_applet_org.kde.plasma.klippermonitor", msgid)
+        }
+        return I18n.tr(override, msgid, [arg1, arg2, arg3])
+    }
 
     property alias cfg_host: hostField.text
     property alias cfg_port: portField.value
@@ -18,6 +35,8 @@ KCM.SimpleKCM {
     property alias cfg_jogFeedXY: jogFeedXYField.value
     property alias cfg_jogFeedZ: jogFeedZField.value
     property alias cfg_defaultFile: defaultFileField.text
+    property string cfg_localeOverride
+    property bool cfg_enableConnections
     property string cfg_hostDefault
     property int cfg_portDefault
     property bool cfg_useTlsDefault
@@ -28,17 +47,29 @@ KCM.SimpleKCM {
     property int cfg_jogFeedXYDefault
     property int cfg_jogFeedZDefault
     property string cfg_defaultFileDefault
+    property string cfg_localeOverrideDefault
+    property bool cfg_enableConnectionsDefault
+    property string initialLocaleOverride: ""
+
+    function localeIndexForValue(value) {
+        for (var i = 0; i < localeField.model.length; i++) {
+            if (localeField.model[i].value === value) {
+                return i
+            }
+        }
+        return 0
+    }
 
     Kirigami.FormLayout {
         QQC2.TextField {
             id: hostField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Moonraker host:")
-            placeholderText: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "192.168.0.42")
+            Kirigami.FormData.label: tr("Moonraker host:")
+            placeholderText: tr("192.168.0.42")
         }
 
         QQC2.SpinBox {
             id: portField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Port:")
+            Kirigami.FormData.label: tr("Port:")
             from: 0
             to: 65535
             editable: true
@@ -46,26 +77,26 @@ KCM.SimpleKCM {
 
         QQC2.CheckBox {
             id: tlsCheckBox
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "TLS:")
-            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Use TLS (wss)")
+            Kirigami.FormData.label: tr("TLS:")
+            text: tr("Use TLS (wss)")
         }
 
         QQC2.TextField {
             id: apiKeyField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "API key or token:")
+            Kirigami.FormData.label: tr("API key or token:")
             echoMode: TextInput.Password
-            placeholderText: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Optional")
+            placeholderText: tr("Optional")
         }
 
         QQC2.TextField {
             id: wsPathField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "WebSocket path:")
-            placeholderText: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "/websocket")
+            Kirigami.FormData.label: tr("WebSocket path:")
+            placeholderText: tr("/websocket")
         }
 
         QQC2.SpinBox {
             id: chartIntervalField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Chart interval (ms):")
+            Kirigami.FormData.label: tr("Chart interval (ms):")
             from: 250
             to: 10000
             stepSize: 250
@@ -74,7 +105,7 @@ KCM.SimpleKCM {
 
         QQC2.SpinBox {
             id: jogStepField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Jog step (mm):")
+            Kirigami.FormData.label: tr("Jog step (mm):")
             from: 1
             to: 1000
             stepSize: 1
@@ -97,7 +128,7 @@ KCM.SimpleKCM {
 
         QQC2.SpinBox {
             id: jogFeedXYField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Jog feedrate XY (mm/min):")
+            Kirigami.FormData.label: tr("Jog feedrate XY (mm/min):")
             from: 0
             to: 30000
             stepSize: 100
@@ -106,7 +137,7 @@ KCM.SimpleKCM {
 
         QQC2.SpinBox {
             id: jogFeedZField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Jog feedrate Z (mm/min):")
+            Kirigami.FormData.label: tr("Jog feedrate Z (mm/min):")
             from: 0
             to: 6000
             stepSize: 50
@@ -115,8 +146,35 @@ KCM.SimpleKCM {
 
         QQC2.TextField {
             id: defaultFileField
-            Kirigami.FormData.label: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Default file to start:")
-            placeholderText: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "filename.gcode")
+            Kirigami.FormData.label: tr("Default file to start:")
+            placeholderText: tr("filename.gcode")
+        }
+
+        QQC2.ComboBox {
+            id: localeField
+            Kirigami.FormData.label: tr("Language:")
+            textRole: "label"
+            valueRole: "value"
+            model: [
+                { label: tr("System language"), value: "" },
+                { label: tr("English"), value: "en" },
+                { label: tr("German"), value: "de" },
+                { label: tr("French"), value: "fr" },
+                { label: tr("Italian"), value: "it" },
+                { label: tr("Spanish"), value: "es" },
+                { label: tr("Dutch"), value: "nl" },
+                { label: tr("Portuguese (Brazil)"), value: "pt_BR" }
+            ]
+            onActivated: {
+                cfg_localeOverride = currentValue
+                if (typeof kcm !== "undefined" && cfg_localeOverride !== initialLocaleOverride) {
+                    kcm.needsSave = true
+                }
+            }
+            Component.onCompleted: {
+                currentIndex = localeIndexForValue(cfg_localeOverride)
+                initialLocaleOverride = cfg_localeOverride
+            }
         }
 
         Item {
@@ -124,7 +182,7 @@ KCM.SimpleKCM {
         }
 
         QQC2.Button {
-            text: i18nd("plasma_applet_org.kde.plasma.klippermonitor", "Clear settings")
+            text: tr("Clear settings")
             onClicked: {
                 hostField.text = ""
                 portField.value = 0
@@ -136,6 +194,8 @@ KCM.SimpleKCM {
                 jogFeedXYField.value = 0
                 jogFeedZField.value = 0
                 defaultFileField.text = ""
+                localeField.currentIndex = 0
+                cfg_localeOverride = ""
             }
         }
     }
@@ -153,5 +213,9 @@ KCM.SimpleKCM {
 
     onCfg_jogFeedZChanged: {
         jogFeedZField.value = cfg_jogFeedZ
+    }
+
+    onCfg_localeOverrideChanged: {
+        localeField.currentIndex = localeIndexForValue(cfg_localeOverride)
     }
 }
